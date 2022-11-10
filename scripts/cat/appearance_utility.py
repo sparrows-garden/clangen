@@ -198,8 +198,7 @@ def init_scars(cat):
         cat.specialty = choice([
             choice(scars1),
             choice(scars2),
-            choice(scars4),
-            choice(scars5)
+            choice(scars3)
         ])
     else:
         cat.specialty = None
@@ -213,8 +212,7 @@ def init_scars(cat):
         cat.specialty2 = choice([
             choice(scars1),
             choice(scars2),
-            choice(scars4),
-            choice(scars5)
+            choice(scars3)
         ])
     else:
         cat.specialty2 = None

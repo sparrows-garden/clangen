@@ -1,7 +1,7 @@
 from .text import *
 from .load_cat import *
 from .game_essentials import *
-
+from . import image_cache
 from scripts.cat.cats import Cat
 
 
@@ -50,13 +50,13 @@ class Button():
             image_path = f'resources/images/buttons/{button_name}.png'
         else: 
             image_path = f'resources/images/buttons/{button_name}_unavailable.png'
-        image = pygame.image.load(image_path).convert_alpha()
+        image = image_cache.load_image(image_path).convert_alpha()
         button = pygame.transform.scale(image, size)
         collided = self.used_screen.blit(button, pos)
         if available and collided.collidepoint(self.used_mouse.pos):
             is_clickable = True
             image_path = f'resources/images/buttons/{button_name}_hover.png'
-            image = pygame.image.load(image_path).convert_alpha()
+            image = image_cache.load_image(image_path).convert_alpha()
             button = pygame.transform.scale(image, size)
         self.used_screen.blit(button, pos)
         if game.clicked and is_clickable:
@@ -150,7 +150,7 @@ class Button():
                      self.font.size + self.padding[1] * 2))
 
         elif dynamic_image:
-            new_button = pygame.image.load(f"{image}.png").convert_alpha()
+            new_button = image_cache.load_image(f"{image}.png").convert_alpha()
         else:
             new_button = image
         new_pos = list(pos)
@@ -180,13 +180,11 @@ class Button():
                 new_button.fill(colour)
                 self.font.text(text, (self.padding[0], 0), new_button)
         elif dynamic_image:
-            new_button = pygame.image.load(f"{image}.png").convert_alpha()
+            new_button = image_cache.load_image(f"{image}.png").convert_alpha()
         self.used_screen.blit(new_button, new_pos)
         if game.clicked and clickable:
             if apprentice is not None:
                 self.choose_mentor(apprentice, cat_value)
-
-
             elif text in ['Next Cat', 'Previous Cat']:
                 game.switches['cat'] = values.get('cat')
             elif text == 'Prevent kits':
@@ -203,6 +201,7 @@ class Button():
                     game.clan.deputy = None
                 Cat.all_cats[cat_value].exiled = True
                 Cat.other_cats[cat_value] = Cat.all_cats[cat_value]
+
             elif text == 'Change to Trans Male':
                 Cat.all_cats[cat_value].genderalign = "trans male"
             elif text == 'Change to Trans Female':
@@ -277,13 +276,26 @@ class Button():
         add = values['add'] if 'add' in values.keys() else False
         remove = values['remove'] if 'remove' in values.keys() else False
         for key, value in values.items():
+            if key == 'text'and value == 'Exile to DF':
+                cat_value = Cat.all_cats[str(values['cat_value'])]
+                if cat_value.dead:
+                    cat_value.df = True
+                    cat_value.thought = "Is distraught after being sent to the Place of No Stars"
+                    game.switches['cur_screen'] = 'dark forest screen'
+                    update_sprite(Cat.all_cats[str(cat_value)])
+            if key == 'text'and value == 'exile cat':
+                cat_value = Cat.all_cats[str(values['cat_value'])]
+                if not cat_value.dead and not cat_value.exiled:
+                    cat_value.exiled = True
+                    cat_value.thought = "Is shocked that they have been exiled"
+                    game.switches['cur_screen'] = 'other screen'
             if cat_value is None:
                 if key in game.switches.keys():
                     if not add:
                         if key == 'cur_screen' and game.switches[
                                 'cur_screen'] in [
                                     'list screen', 'clan screen',
-                                    'starclan screen'
+                                    'starclan screen', 'outside screen'
                                 ]:
                             game.switches['last_screen'] = game.switches[
                                 'cur_screen']
@@ -305,6 +317,7 @@ class Button():
                     cat_mate.unset_mate(breakup=True)
                     cat_value.unset_mate(breakup=True)
                     game.switches['broke_up'] = True
+        
         if arrow is not None and game.switches['cur_screen'] == 'events screen':
             max_scroll_direction = len(
                 game.cur_events_list) - game.max_events_displayed
@@ -356,14 +369,23 @@ class Button():
         """Chooses cat_value as mentor for apprentice."""
         if apprentice not in cat_value.apprentice:
             if apprentice.moons == 6:
+                # reset patrol number
+                apprentice.patrol_with_mentor = 0
+                # remove from former mentor without adding apprentice to former apprentice list
+                # and without adding mentor to former mentor list
                 apprentice.mentor.apprentice.remove(apprentice)
                 apprentice.mentor = cat_value
                 cat_value.apprentice.append(apprentice)
             else:
+                # reset patrol number
+                apprentice.patrol_with_mentor = 0
+                # remove and append relevant lists
                 apprentice.mentor.former_apprentices.append(apprentice)
                 apprentice.mentor.apprentice.remove(apprentice)
+                apprentice.former_mentor.append(apprentice.mentor)
                 apprentice.mentor = cat_value
                 cat_value.apprentice.append(apprentice)
+
 
         game.current_screen = 'clan screen'
 

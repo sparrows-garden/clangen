@@ -4,6 +4,7 @@ from scripts.game_structure.buttons import Button, buttons
 from scripts.game_structure.game_essentials import *
 from scripts.clan import map_available
 from scripts.game_structure.text import *
+import scripts.game_structure.image_cache as image_cache
 
 
 class Screens():
@@ -105,7 +106,7 @@ def draw_menu_buttons():
 # ---------------------------------------------------------------------------- #
 def draw_clan_name():
     clan_name_bg = pygame.transform.scale(
-        pygame.image.load("resources/images/clan_name_bg.png").convert_alpha(), (180, 35))
+        image_cache.load_image("resources/images/clan_name_bg.png").convert_alpha(), (180, 35))
     screen.blit(clan_name_bg, (310, 25))
 
     verdana_big_light.text(f'{game.clan.name}Clan', ('center', 32))
@@ -121,7 +122,7 @@ def draw_next_prev_cat_buttons(the_cat):
 
     previous_cat = 0
     next_cat = 0
-    if the_cat.dead and not is_instructor:
+    if the_cat.dead and not is_instructor and not the_cat.df:
         previous_cat = game.clan.instructor.ID
 
     if is_instructor:
@@ -136,14 +137,16 @@ def draw_next_prev_cat_buttons(the_cat):
                     check_cat].ID != the_cat.ID and Cat.all_cats[
                         check_cat].dead == the_cat.dead and Cat.all_cats[
                             check_cat].ID != game.clan.instructor.ID and not Cat.all_cats[
-                                check_cat].exiled and Cat.all_cats[check_cat].mentor is not None:
+                                check_cat].exiled and Cat.all_cats[check_cat].mentor is not None and Cat.all_cats[
+                    check_cat].df == the_cat.df:
                 previous_cat = Cat.all_cats[check_cat].ID
 
             elif next_cat == 1 and Cat.all_cats[
                     check_cat].ID != the_cat.ID and Cat.all_cats[
                         check_cat].dead == the_cat.dead and Cat.all_cats[
                             check_cat].ID != game.clan.instructor.ID and not Cat.all_cats[
-                                check_cat].exiled and Cat.all_cats[check_cat].mentor is not None:
+                                check_cat].exiled and Cat.all_cats[check_cat].mentor is not None and Cat.all_cats[
+                    check_cat].df == the_cat.df:
                 next_cat = Cat.all_cats[check_cat].ID
 
             elif int(next_cat) > 1:
@@ -155,7 +158,8 @@ def draw_next_prev_cat_buttons(the_cat):
                         check_cat].dead == the_cat.dead and Cat.all_cats[
                             check_cat].ID != game.clan.instructor.ID and not Cat.all_cats[
                                 check_cat].exiled and Cat.all_cats[
-                                    check_cat].status not in ['apprentice', 'medicine cat apprentice', 'kitten']:
+                                    check_cat].status not in ['apprentice', 'medicine cat apprentice', 'kitten'] and Cat.all_cats[
+                    check_cat].df == the_cat.df:
                 previous_cat = Cat.all_cats[check_cat].ID
 
             elif next_cat == 1 and Cat.all_cats[
@@ -163,7 +167,8 @@ def draw_next_prev_cat_buttons(the_cat):
                         check_cat].dead == the_cat.dead and Cat.all_cats[
                             check_cat].ID != game.clan.instructor.ID and not Cat.all_cats[
                                 check_cat].exiled and Cat.all_cats[
-                                    check_cat].status not in ['apprentice', 'medicine cat apprentice', 'kitten']:
+                                    check_cat].status not in ['apprentice', 'medicine cat apprentice', 'kitten'] and Cat.all_cats[
+                    check_cat].df == the_cat.df:
                 next_cat = Cat.all_cats[check_cat].ID
 
             elif int(next_cat) > 1:
@@ -174,14 +179,16 @@ def draw_next_prev_cat_buttons(the_cat):
                     check_cat].ID != the_cat.ID and Cat.all_cats[
                         check_cat].dead == the_cat.dead and Cat.all_cats[
                             check_cat].ID != game.clan.instructor.ID and not Cat.all_cats[
-                                check_cat].exiled:
+                                check_cat].exiled and Cat.all_cats[
+                    check_cat].df == the_cat.df:
                 previous_cat = Cat.all_cats[check_cat].ID
 
             elif next_cat == 1 and Cat.all_cats[
                     check_cat].ID != the_cat.ID and Cat.all_cats[
                         check_cat].dead == the_cat.dead and Cat.all_cats[
                             check_cat].ID != game.clan.instructor.ID and not Cat.all_cats[
-                                check_cat].exiled:
+                                check_cat].exiled and Cat.all_cats[
+                    check_cat].df == the_cat.df:
                 next_cat = Cat.all_cats[check_cat].ID
 
             elif int(next_cat) > 1:
@@ -201,7 +208,8 @@ def draw_next_prev_cat_buttons(the_cat):
                                   size=(153, 30),
                                   hotkey=[21],
                                   show_details=False,
-                                  chosen_cat=None
+                                  chosen_cat=None,
+                                  mate=None
                                   )
     else:
         buttons.draw_image_button((622, 25),
@@ -220,7 +228,8 @@ def draw_next_prev_cat_buttons(the_cat):
                                   cat=previous_cat,
                                   size=(153, 30),
                                   hotkey=[23],
-                                  show_details=False
+                                  show_details=False,
+                                  mate=None
                                   )
     else:
         buttons.draw_image_button((25, 25),
